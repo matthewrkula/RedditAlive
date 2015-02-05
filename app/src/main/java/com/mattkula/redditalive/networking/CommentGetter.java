@@ -27,7 +27,7 @@ public class CommentGetter extends AsyncTask<Void, Void, List<Comment>> {
         HttpRestClient client = new HttpRestClient();
         client.setUserAgent("android:com.mattkula.redditalive:v0.1 (by /u/kuler51)");
         Comments commentFetcher = new Comments(client);
-        final List<Comment> comments = commentFetcher.ofSubmission(mThreadID, null, 0, 8, 10, CommentSort.NEW);
+        final List<Comment> comments = commentFetcher.ofSubmission(mThreadID, null, 0, 3, 10, CommentSort.NEW);
         return comments;
     }
 

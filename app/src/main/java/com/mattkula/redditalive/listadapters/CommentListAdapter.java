@@ -10,31 +10,41 @@ import android.widget.TextView;
 import com.github.jreddit.entity.Comment;
 import com.mattkula.redditalive.R;
 
-import org.w3c.dom.Text;
-
+import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Created by matt on 2/4/15.
- */
 public class CommentListAdapter extends BaseAdapter {
 
-    private List<Comment> mComments;
+    private List<CommentWithDepth> mCommentList;
     private Context mContext;
 
     public CommentListAdapter(Context c, List<Comment> comments) {
         mContext = c;
-        mComments = comments;
+        mCommentList = new ArrayList<>();
+        sortComments(comments);
+    }
+
+    private void sortComments(List<Comment> comments) {
+        for (Comment comment : comments) {
+            addDepthProperty(comment, 0);
+        }
+    }
+
+    private void addDepthProperty(Comment comment, int depth) {
+        mCommentList.add(new CommentWithDepth(comment, depth));
+        for (Comment reply : comment.getReplies()) {
+            addDepthProperty(reply, depth + 1);
+        }
     }
 
     @Override
     public int getCount() {
-        return mComments.size();
+        return mCommentList.size();
     }
 
     @Override
     public Object getItem(int position) {
-        return mComments.get(position);
+        return mCommentList.get(position);
     }
 
     @Override
@@ -49,11 +59,22 @@ public class CommentListAdapter extends BaseAdapter {
             view = LayoutInflater.from(mContext).inflate(R.layout.list_item_comment, parent, false);
         }
 
-        Comment comment = (Comment)getItem(position);
+        CommentWithDepth commentHolder = (CommentWithDepth)getItem(position);
         TextView author = (TextView)view.findViewById(R.id.tv_comment_author);
         TextView body = (TextView)view.findViewById(R.id.tv_comment_body);
-        author.setText(comment.getAuthor());
-        body.setText(comment.getBody());
+        author.setText(commentHolder.comment.getAuthor());
+        body.setText(commentHolder.comment.getBody());
+        author.setPadding(20 * commentHolder.depth, 0, 0, 0);
+        body.setPadding(20 * commentHolder.depth, 0, 0, 0);
         return view;
+    }
+
+    private class CommentWithDepth {
+        public Comment comment;
+        public int depth;
+        public CommentWithDepth(Comment comment, int depth) {
+            this.comment = comment;
+            this.depth = depth;
+        }
     }
 }
