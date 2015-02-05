@@ -11,16 +11,20 @@ import com.github.jreddit.entity.Comment;
 import com.mattkula.redditalive.R;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class CommentListAdapter extends BaseAdapter {
 
     private List<CommentWithDepth> mCommentList;
+    private Map<String, CommentWithDepth> mCommentMap;
     private Context mContext;
 
     public CommentListAdapter(Context c, List<Comment> comments) {
         mContext = c;
         mCommentList = new ArrayList<>();
+        mCommentMap = new HashMap<>();
         sortComments(comments);
     }
 
@@ -31,7 +35,9 @@ public class CommentListAdapter extends BaseAdapter {
     }
 
     private void addDepthProperty(Comment comment, int depth) {
-        mCommentList.add(new CommentWithDepth(comment, depth));
+        CommentWithDepth c = new CommentWithDepth(comment, depth);
+        mCommentList.add(c);
+        mCommentMap.put(c.comment.getIdentifier(), c);
         for (Comment reply : comment.getReplies()) {
             addDepthProperty(reply, depth + 1);
         }
@@ -49,7 +55,12 @@ public class CommentListAdapter extends BaseAdapter {
 
     @Override
     public long getItemId(int position) {
-        return position;
+        return mCommentList.get(position).comment.getIdentifier().hashCode();
+    }
+
+    @Override
+    public boolean hasStableIds() {
+        return true;
     }
 
     @Override
@@ -64,8 +75,7 @@ public class CommentListAdapter extends BaseAdapter {
         TextView body = (TextView)view.findViewById(R.id.tv_comment_body);
         author.setText(commentHolder.comment.getAuthor());
         body.setText(commentHolder.comment.getBody());
-        author.setPadding(20 * commentHolder.depth, 0, 0, 0);
-        body.setPadding(20 * commentHolder.depth, 0, 0, 0);
+        view.setPadding(10*commentHolder.depth, 0, 0, 0);
         return view;
     }
 
