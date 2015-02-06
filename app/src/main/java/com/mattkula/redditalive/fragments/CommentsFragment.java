@@ -9,6 +9,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.github.jreddit.entity.Comment;
@@ -27,10 +28,12 @@ public class CommentsFragment extends Fragment {
     private final int FETCH_DELAY = 1000 * 10;
 
     private ListView commentList;
+    private ProgressBar progressBar;
     private String threadID;
 
     private Handler timer;
     private Runnable fetchComments;
+    private CommentListAdapter adapter;
 
     public static CommentsFragment newInstance(String threadID) {
         CommentsFragment fragment = new CommentsFragment();
@@ -43,6 +46,7 @@ public class CommentsFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        adapter = new CommentListAdapter(getActivity());
         threadID = getArguments().getString(ARG_THREAD_ID);
         timer = new Handler();
         fetchComments = new Runnable() {
@@ -51,6 +55,7 @@ public class CommentsFragment extends Fragment {
                 if (isFetching || !isActive) return;
 
                 new CommentGetter(threadID, callback).execute();
+                progressBar.setVisibility(View.VISIBLE);
                 isFetching = true;
                 timer.postDelayed(fetchComments, FETCH_DELAY);
             }
@@ -61,8 +66,8 @@ public class CommentsFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_comments, null);
         commentList = (ListView)view.findViewById(R.id.list_comments);
-        commentList.setDivider(null);
-        commentList.setDividerHeight(0);
+        commentList.setAdapter(adapter);
+        progressBar = (ProgressBar)view.findViewById(R.id.progress_bar);
         return view;
     }
 
@@ -83,8 +88,9 @@ public class CommentsFragment extends Fragment {
         @Override
         public void onCommentsBeenGot(List<Comment> comments) {
             isFetching = false;
+            progressBar.setVisibility(View.GONE);
             if (isActive) {
-                commentList.setAdapter(new CommentListAdapter(getActivity(), comments));
+                adapter.addNewComments(comments);
                 Log.v(CommentsFragment.class.getName(), comments.get(0).getBody());
             }
         }

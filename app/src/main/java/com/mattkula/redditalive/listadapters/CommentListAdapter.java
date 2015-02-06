@@ -1,6 +1,7 @@
 package com.mattkula.redditalive.listadapters;
 
 import android.content.Context;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,6 +12,7 @@ import com.github.jreddit.entity.Comment;
 import com.mattkula.redditalive.R;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,23 +23,34 @@ public class CommentListAdapter extends BaseAdapter {
     private Map<String, CommentWithDepth> mCommentMap;
     private Context mContext;
 
-    public CommentListAdapter(Context c, List<Comment> comments) {
+    public CommentListAdapter(Context c) {
         mContext = c;
         mCommentList = new ArrayList<>();
         mCommentMap = new HashMap<>();
-        sortComments(comments);
     }
 
-    private void sortComments(List<Comment> comments) {
+    public void addNewComments(List<Comment> comments) {
+        Collections.reverse(comments);
         for (Comment comment : comments) {
             addDepthProperty(comment, 0);
         }
+        this.notifyDataSetChanged();
     }
 
     private void addDepthProperty(Comment comment, int depth) {
         CommentWithDepth c = new CommentWithDepth(comment, depth);
-        mCommentList.add(c);
-        mCommentMap.put(c.comment.getIdentifier(), c);
+        if (!mCommentMap.keySet().contains(comment.getFullName())) {
+
+            if (mCommentMap.keySet().contains(comment.getParentId())) {
+                CommentWithDepth parent = mCommentMap.get(comment.getParentId());
+                c.depth = parent.depth + 1;
+                mCommentList.add(mCommentList.indexOf(parent) + 1, c);
+            } else {
+                mCommentList.add(0, c);
+            }
+
+            mCommentMap.put(c.comment.getFullName(), c);
+        }
         for (Comment reply : comment.getReplies()) {
             addDepthProperty(reply, depth + 1);
         }
