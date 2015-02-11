@@ -1,14 +1,13 @@
 package com.mattkula.redditalive.listadapters;
 
 import android.content.Context;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
 
-import com.github.jreddit.entity.Comment;
+import com.mattkula.redditalive.Comment;
 import com.mattkula.redditalive.R;
 
 import java.util.ArrayList;
@@ -19,8 +18,8 @@ import java.util.Map;
 
 public class CommentListAdapter extends BaseAdapter {
 
-    private List<CommentWithDepth> mCommentList;
-    private Map<String, CommentWithDepth> mCommentMap;
+    private List<Comment> mCommentList;
+    private Map<String, Comment> mCommentMap;
     private Context mContext;
 
     public CommentListAdapter(Context c) {
@@ -38,18 +37,18 @@ public class CommentListAdapter extends BaseAdapter {
     }
 
     private void addDepthProperty(Comment comment, int depth) {
-        CommentWithDepth c = new CommentWithDepth(comment, depth);
-        if (!mCommentMap.keySet().contains(comment.getFullName())) {
+        comment.setDepth(depth);
+        if (!mCommentMap.keySet().contains(comment.getId())) {
 
             if (mCommentMap.keySet().contains(comment.getParentId())) {
-                CommentWithDepth parent = mCommentMap.get(comment.getParentId());
-                c.depth = parent.depth + 1;
-                mCommentList.add(mCommentList.indexOf(parent) + 1, c);
+                Comment parent = mCommentMap.get(comment.getParentId());
+                comment.setDepth(parent.getDepth() + 1);
+                mCommentList.add(mCommentList.indexOf(parent) + 1, comment);
             } else {
-                mCommentList.add(0, c);
+                mCommentList.add(0, comment);
             }
 
-            mCommentMap.put(c.comment.getFullName(), c);
+            mCommentMap.put(comment.getId(), comment);
         }
         for (Comment reply : comment.getReplies()) {
             addDepthProperty(reply, depth + 1);
@@ -68,7 +67,7 @@ public class CommentListAdapter extends BaseAdapter {
 
     @Override
     public long getItemId(int position) {
-        return mCommentList.get(position).comment.getIdentifier().hashCode();
+        return mCommentList.get(position).getId().hashCode();
     }
 
     @Override
@@ -83,21 +82,12 @@ public class CommentListAdapter extends BaseAdapter {
             view = LayoutInflater.from(mContext).inflate(R.layout.list_item_comment, parent, false);
         }
 
-        CommentWithDepth commentHolder = (CommentWithDepth)getItem(position);
+        Comment comment = (Comment)getItem(position);
         TextView author = (TextView)view.findViewById(R.id.tv_comment_author);
         TextView body = (TextView)view.findViewById(R.id.tv_comment_body);
-        author.setText(commentHolder.comment.getAuthor());
-        body.setText(commentHolder.comment.getBody());
-        view.setPadding(10*commentHolder.depth, 0, 0, 0);
+        author.setText(comment.getAuthor());
+        body.setText(comment.getBody());
+        view.setPadding(10*comment.getDepth(), 0, 0, 0);
         return view;
-    }
-
-    private class CommentWithDepth {
-        public Comment comment;
-        public int depth;
-        public CommentWithDepth(Comment comment, int depth) {
-            this.comment = comment;
-            this.depth = depth;
-        }
     }
 }

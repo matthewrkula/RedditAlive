@@ -3,19 +3,18 @@ package com.mattkula.redditalive.fragments;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.Fragment;
-import android.support.v7.widget.CardView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
 import android.widget.ProgressBar;
-import android.widget.TextView;
 
-import com.github.jreddit.entity.Comment;
+import com.mattkula.redditalive.Comment;
 import com.mattkula.redditalive.R;
 import com.mattkula.redditalive.listadapters.CommentListAdapter;
 import com.mattkula.redditalive.networking.CommentGetter;
+import com.mattkula.redditalive.networking.NetworkManager;
 
 import java.util.List;
 
@@ -54,7 +53,7 @@ public class CommentsFragment extends Fragment {
             public void run() {
                 if (isFetching || !isActive) return;
 
-                new CommentGetter(threadID, callback).execute();
+                CommentGetter.getComments(getActivity(), threadID,  listener);
                 progressBar.setVisibility(View.VISIBLE);
                 isFetching = true;
                 timer.postDelayed(fetchComments, FETCH_DELAY);
@@ -84,15 +83,13 @@ public class CommentsFragment extends Fragment {
         isActive = false;
     }
 
-    CommentGetter.CommentGetterCallback callback = new CommentGetter.CommentGetterCallback() {
+    CommentGetter.CommentListener listener = new CommentGetter.CommentListener() {
         @Override
-        public void onCommentsBeenGot(List<Comment> comments) {
+        public void gotComments(List<Comment> comments) {
             isFetching = false;
+            adapter.addNewComments(comments);
             progressBar.setVisibility(View.GONE);
-            if (isActive) {
-                adapter.addNewComments(comments);
-                Log.v(CommentsFragment.class.getName(), comments.get(0).getBody());
-            }
+            Log.v("ASDFASDF", comments.get(comments.size()-1).getBody());
         }
     };
 }

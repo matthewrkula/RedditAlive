@@ -44,6 +44,7 @@ public class MainActivity extends ActionBarActivity
             }
             //TODO: Remove this fake info
             else {
+//                mCommentsFragment = CommentsFragment.newInstance("2vh9zt");
                 mCommentsFragment = CommentsFragment.newInstance("2v0h26");
             }
         }
