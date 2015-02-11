@@ -14,8 +14,6 @@ import com.mattkula.redditalive.Comment;
 import com.mattkula.redditalive.R;
 import com.mattkula.redditalive.listadapters.CommentListAdapter;
 import com.mattkula.redditalive.networking.CommentGetter;
-import com.mattkula.redditalive.networking.NetworkManager;
-import com.nhaarman.listviewanimations.appearance.simple.SwingRightInAnimationAdapter;
 
 import java.util.List;
 
